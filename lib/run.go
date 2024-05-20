@@ -1,17 +1,14 @@
 package boxes
 
 import (
-	"fmt"
 	termbox "github.com/nsf/termbox-go"
-	"os"
 )
 
 func Run(w Widget) {
 	err := termbox.Init()
 
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		panic(err)
 	}
 
 	var windowWidth, windowHeight = termbox.Size()
@@ -26,8 +23,7 @@ func Run(w Widget) {
 		maxHeight: windowHeight,
 	}
 
-	var root = w
-	root.render(ctx, cons).exec(0, 0)
+	w.render(ctx, cons).exec(0, 0)
 	termbox.Flush()
 
 	_ = termbox.PollEvent()

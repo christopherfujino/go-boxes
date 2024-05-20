@@ -147,22 +147,25 @@ type Row struct {
 }
 
 func (w Row) render(ctx Context, cons Constraints) RenderJob {
-	var jobs = make([]RenderJob, len(w.Children))
 	var cumulativeWidth = 0
 	var maxHeight = 0
-	for idx, child := range w.Children {
-		var job = child.render(
-			ctx,
-			Constraints{
-				maxWidth: cons.maxWidth - cumulativeWidth,
-			},
-		)
-		jobs[idx] = job
-		cumulativeWidth += job.width
-		if job.height > maxHeight {
-			maxHeight = job.height
-		}
-	}
+
+	var jobs = Map(
+		w.Children,
+		func(child Widget) RenderJob {
+			var job = child.render(
+				ctx,
+				Constraints{
+					maxWidth: cons.maxWidth - cumulativeWidth,
+				},
+			)
+			cumulativeWidth += job.width
+			if job.height > maxHeight {
+				maxHeight = job.height
+			}
+			return job
+		},
+	)
 
 	if cumulativeWidth > cons.maxWidth {
 		panic("whoops!")
@@ -173,7 +176,7 @@ func (w Row) render(ctx Context, cons Constraints) RenderJob {
 	}
 
 	return RenderJob{
-		width: cumulativeWidth,
+		width:  cumulativeWidth,
 		height: maxHeight,
 		exec: func(x, y int) {
 			var left = x
