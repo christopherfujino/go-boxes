@@ -27,11 +27,12 @@ type RenderJob struct {
 	exec   func(int, int)
 }
 
-type CenterWidget struct {
+// An alignment widget.
+type Center struct {
 	Child Widget
 }
 
-func (w CenterWidget) render(ctx RenderContext) RenderJob {
+func (w Center) render(ctx RenderContext) RenderJob {
 	var width = ctx.constraints.finalX - ctx.constraints.startingX
 	var childJob = w.Child.render(ctx)
 	var leftPad = (width - childJob.width) / 2
@@ -49,11 +50,13 @@ type Widget interface {
 	render(RenderContext) RenderJob
 }
 
-type TextWidget struct {
+// A text widget.
+type Text struct {
 	Msg string
 }
 
-type ContainerWidget struct {
+// A widget that provides formatting to its child.
+type Container struct {
 	Child Widget
 }
 
@@ -64,7 +67,7 @@ const bottomRightCorner = '\u2518'
 const horizontalBar = '\u2500'
 const verticalBar = '\u2502'
 
-func (w ContainerWidget) render(ctx RenderContext) RenderJob {
+func (w Container) render(ctx RenderContext) RenderJob {
 	const paddingX = 1
 	const paddingY = 1
 	// TODO some code refactoring before non-1 renders correctly
@@ -117,7 +120,7 @@ func (w ContainerWidget) render(ctx RenderContext) RenderJob {
 	}
 }
 
-func (w TextWidget) render(ctx RenderContext) RenderJob {
+func (w Text) render(ctx RenderContext) RenderJob {
 	var width int = 0
 	// TODO layout
 	for _, c := range w.Msg {

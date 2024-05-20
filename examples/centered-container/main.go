@@ -6,9 +6,9 @@ import (
 
 func main() {
 	boxes.Run(
-		boxes.CenterWidget{
-			Child: boxes.ContainerWidget{
-				Child: boxes.TextWidget{
+		boxes.Center{
+			Child: boxes.Container{
+				Child: boxes.Text{
 					Msg: "Hello from a Widget",
 				},
 			},

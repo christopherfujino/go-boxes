@@ -10,30 +10,30 @@ The following code:
 package main
 
 import (
-	"github.com/christopherfujino/go-boxes"
+  "github.com/christopherfujino/go-boxes"
 )
 
 func main() {
-	boxes.Run(
-		boxes.CenterWidget{
-			Child: boxes.ContainerWidget{
-				Child: boxes.TextWidget{
-					Msg: "Hello from a Widget",
-				},
-			},
-		},
-	)
+  boxes.Run(
+    boxes.Center{
+      Child: boxes.Container{
+        Child: boxes.Text{
+          Msg: "Hello, world!",
+        },
+      },
+    },
+  )
 }
 ```
 
 Renders this UI:
 
 ```
-                         ┌─────────────────────┐
-                         │                     │
-                         │ Hello from a Widget │
-                         │                     │
-                         └─────────────────────┘
+                         ┌───────────────┐
+                         │               │
+                         │ Hello, world! │
+                         │               │
+                         └───────────────┘
 ```
 
 ## Dependencies
