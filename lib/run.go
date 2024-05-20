@@ -15,22 +15,22 @@ func Run(w Widget) {
 	}
 
 	var windowWidth, windowHeight = termbox.Size()
-	var ctx = RenderContext{
-		constraints: Constraints{
-			startingX: 0,
-			finalX:    windowWidth - 1,
-			startingY: 0,
-			finalY:    windowHeight - 1,
-		},
+	var ctx = Context{
 		fg: termbox.ColorBlue,
 		bg: termbox.ColorDefault,
 	}
+	var cons = Constraints{
+		minWidth:  0,
+		maxWidth:  windowWidth,
+		minHeight: 0,
+		maxHeight: windowHeight,
+	}
 
 	var root = w
-	root.render(ctx).exec(0, 0)
+	root.render(ctx, cons).exec(0, 0)
 	termbox.Flush()
 
-  _ = termbox.PollEvent()
+	_ = termbox.PollEvent()
 
 	termbox.Close()
 }

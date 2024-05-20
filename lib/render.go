@@ -5,20 +5,18 @@ import (
 	termbox "github.com/nsf/termbox-go"
 )
 
-type RenderContext struct {
-	constraints Constraints
-
+type Context struct {
 	fg termbox.Attribute
 	bg termbox.Attribute
 }
 
 // With Flutter, this is min/max width/height
 type Constraints struct {
-	startingX int
-	finalX    int
+	minWidth int
+	maxWidth int
 
-	startingY int
-	finalY    int
+	minHeight int
+	maxHeight int
 }
 
 type RenderJob struct {
@@ -32,9 +30,9 @@ type Center struct {
 	Child Widget
 }
 
-func (w Center) render(ctx RenderContext) RenderJob {
-	var width = ctx.constraints.finalX - ctx.constraints.startingX
-	var childJob = w.Child.render(ctx)
+func (w Center) render(ctx Context, cons Constraints) RenderJob {
+	var width = cons.maxWidth
+	var childJob = w.Child.render(ctx, cons)
 	var leftPad = (width - childJob.width) / 2
 	return RenderJob{
 		width:  width,
@@ -47,12 +45,7 @@ func (w Center) render(ctx RenderContext) RenderJob {
 
 // TODO consider constraints
 type Widget interface {
-	render(RenderContext) RenderJob
-}
-
-// A text widget.
-type Text struct {
-	Msg string
+	render(Context, Constraints) RenderJob
 }
 
 // A widget that provides formatting to its child.
@@ -67,22 +60,26 @@ const bottomRightCorner = '\u2518'
 const horizontalBar = '\u2500'
 const verticalBar = '\u2502'
 
-func (w Container) render(ctx RenderContext) RenderJob {
+func (w Container) render(ctx Context, cons Constraints) RenderJob {
 	const paddingX = 1
 	const paddingY = 1
 	// TODO some code refactoring before non-1 renders correctly
 	const borderThickness = 1
 
-	var childJob = w.Child.render(RenderContext{
-		constraints: Constraints{
-			startingX: ctx.constraints.startingX + borderThickness + paddingX,
-			finalX:    ctx.constraints.finalX,
-			startingY: ctx.constraints.startingY + borderThickness + paddingY,
-			finalY:    ctx.constraints.finalY,
+	var childJob = w.Child.render(
+		Context{
+			fg: ctx.fg,
+			bg: ctx.bg,
 		},
-		fg: ctx.fg,
-		bg: ctx.bg,
-	})
+		Constraints{
+			// Should these mins be less padding and border?
+			minWidth:  cons.minWidth,
+			minHeight: cons.minHeight,
+
+			maxWidth:  cons.maxWidth - (borderThickness-paddingX)*2,
+			maxHeight: cons.maxWidth - (borderThickness-paddingY)*2,
+		},
+	)
 
 	// TODO check for overflow
 	var boxWidth = childJob.width + (borderThickness+paddingX)*2
@@ -120,7 +117,12 @@ func (w Container) render(ctx RenderContext) RenderJob {
 	}
 }
 
-func (w Text) render(ctx RenderContext) RenderJob {
+// A text widget.
+type Text struct {
+	Msg string
+}
+
+func (w Text) render(ctx Context, cons Constraints) RenderJob {
 	var width int = 0
 	// TODO layout
 	for _, c := range w.Msg {
@@ -134,6 +136,50 @@ func (w Text) render(ctx RenderContext) RenderJob {
 			for _, c := range w.Msg {
 				termbox.SetCell(x, y, c, ctx.fg, ctx.bg)
 				x += runewidth.RuneWidth(c)
+			}
+		},
+	}
+}
+
+// An alignment widget.
+type Row struct {
+	Children []Widget
+}
+
+func (w Row) render(ctx Context, cons Constraints) RenderJob {
+	var jobs = make([]RenderJob, len(w.Children))
+	var cumulativeWidth = 0
+	var maxHeight = 0
+	for idx, child := range w.Children {
+		var job = child.render(
+			ctx,
+			Constraints{
+				maxWidth: cons.maxWidth - cumulativeWidth,
+			},
+		)
+		jobs[idx] = job
+		cumulativeWidth += job.width
+		if job.height > maxHeight {
+			maxHeight = job.height
+		}
+	}
+
+	if cumulativeWidth > cons.maxWidth {
+		panic("whoops!")
+	}
+
+	if maxHeight > cons.maxHeight {
+		panic("whoops!")
+	}
+
+	return RenderJob{
+		width: cumulativeWidth,
+		height: maxHeight,
+		exec: func(x, y int) {
+			var left = x
+			for _, job := range jobs {
+				job.exec(left, y)
+				left += job.width
 			}
 		},
 	}
