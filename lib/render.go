@@ -1,4 +1,4 @@
-package main
+package boxes
 
 import (
 	runewidth "github.com/mattn/go-runewidth"
@@ -28,12 +28,12 @@ type RenderJob struct {
 }
 
 type CenterWidget struct {
-	child Widget
+	Child Widget
 }
 
 func (w CenterWidget) render(ctx RenderContext) RenderJob {
 	var width = ctx.constraints.finalX - ctx.constraints.startingX
-	var childJob = w.child.render(ctx)
+	var childJob = w.Child.render(ctx)
 	var leftPad = (width - childJob.width) / 2
 	return RenderJob{
 		width:  width,
@@ -50,11 +50,11 @@ type Widget interface {
 }
 
 type TextWidget struct {
-	msg string
+	Msg string
 }
 
 type ContainerWidget struct {
-	child Widget
+	Child Widget
 }
 
 const topRightCorner = '\u2510'
@@ -70,7 +70,7 @@ func (w ContainerWidget) render(ctx RenderContext) RenderJob {
 	// TODO some code refactoring before non-1 renders correctly
 	const borderThickness = 1
 
-	var childJob = w.child.render(RenderContext{
+	var childJob = w.Child.render(RenderContext{
 		constraints: Constraints{
 			startingX: ctx.constraints.startingX + borderThickness + paddingX,
 			finalX:    ctx.constraints.finalX,
@@ -120,7 +120,7 @@ func (w ContainerWidget) render(ctx RenderContext) RenderJob {
 func (w TextWidget) render(ctx RenderContext) RenderJob {
 	var width int = 0
 	// TODO layout
-	for _, c := range w.msg {
+	for _, c := range w.Msg {
 		width += runewidth.RuneWidth(c)
 	}
 
@@ -128,7 +128,7 @@ func (w TextWidget) render(ctx RenderContext) RenderJob {
 		width:  width,
 		height: 1, // TODO
 		exec: func(x, y int) {
-			for _, c := range w.msg {
+			for _, c := range w.Msg {
 				termbox.SetCell(x, y, c, ctx.fg, ctx.bg)
 				x += runewidth.RuneWidth(c)
 			}
