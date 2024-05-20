@@ -28,6 +28,23 @@ type Widget interface {
 	render(Context, Constraints) RenderJob
 }
 
+type Clickable struct {
+	Child Widget
+	OnClick func()
+}
+
+func (w Clickable) render(ctx Context, cons Constraints) RenderJob {
+	var childJob = w.Child.render(ctx, cons)
+
+	return RenderJob{
+		width: childJob.width,
+		height: childJob.height,
+		exec: func(x, y int) {
+			childJob.exec(x, y)
+		},
+	}
+}
+
 // A widget that provides formatting to its child.
 type Container struct {
 	Child Widget
@@ -47,10 +64,7 @@ func (w Container) render(ctx Context, cons Constraints) RenderJob {
 	const borderThickness = 1
 
 	var childJob = w.Child.render(
-		Context{
-			fg: ctx.fg,
-			bg: ctx.bg,
-		},
+		ctx,
 		Constraints{
 			// Should these mins be less padding and border?
 			minWidth:  cons.minWidth,

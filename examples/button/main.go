@@ -7,16 +7,16 @@ import (
 func main() {
 	boxes.Run(
 		boxes.Row{
-			Children: boxes.Map(
-				[]string{
-					"Hello, world!",
-					"Hmm...",
-					"Goodbye, world!",
+			Children: []boxes.Widget{
+				boxes.Text{Msg: "Hello, world!"},
+				boxes.Clickable{
+					Child: boxes.Text{Msg: "Hmm..."},
+					OnClick: func() {
+						panic("yay")
+					},
 				},
-				func(s string) boxes.Widget {
-					return boxes.Container{Child: boxes.Text{Msg: s}}
-				},
-			),
+				boxes.Text{Msg: "Goodbye, world!"},
+			},
 		},
 	)
 }
