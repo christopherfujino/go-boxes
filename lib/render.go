@@ -43,7 +43,6 @@ func (w Center) render(ctx Context, cons Constraints) RenderJob {
 	}
 }
 
-// TODO consider constraints
 type Widget interface {
 	render(Context, Constraints) RenderJob
 }
