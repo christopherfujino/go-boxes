@@ -34,3 +34,10 @@ Renders this UI:
 │               ││        ││                 │
 └───────────────┘└────────┘└─────────────────┘
 ```
+
+## Legal
+
+This is licensed under the [BSD-3 license](./LICENSE).
+
+Copyright is held by Google LLC; however, this is not an official Google
+product.
