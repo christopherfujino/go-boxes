@@ -1,0 +1,16 @@
+name: Analysis
+run-name: Analysis
+on: [push, pull_request]
+jobs:
+  Analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Check out go SDK
+        # https://github.com/actions/setup-go/releases
+        uses: actions/setup-go@v5.0.1
+      - name: vet
+        run: |
+          cd lib/
+          go vet .
