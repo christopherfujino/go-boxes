@@ -12,5 +12,5 @@ jobs:
         uses: actions/setup-go@v5.0.1
       - name: vet
         run: |
-          cd lib/
-          go vet .
+          cd tool/
+          go run .
