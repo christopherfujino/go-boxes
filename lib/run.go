@@ -34,6 +34,7 @@ func Run(w Widget) {
 		var event = termbox.PollEvent()
 		switch event.Type {
 		case termbox.EventKey:
+			DebugPrint("Got Key")
 			break
 		case termbox.EventMouse:
 			var maybe = findBox(renderBox, event.MouseY, event.MouseY)
@@ -47,6 +48,7 @@ func Run(w Widget) {
 				}
 			}
 		default:
+			DebugPrint("Unknown event")
 			panic(event.Type)
 		}
 	}

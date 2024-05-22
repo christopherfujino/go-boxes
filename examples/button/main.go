@@ -8,14 +8,20 @@ func main() {
 	boxes.Run(
 		boxes.Row{
 			Children: []boxes.Widget{
-				boxes.Text{Msg: "Hello, world!"},
+				boxes.Container{
+					Child: boxes.Text{Msg: "Hello, world!"},
+				},
 				boxes.Clickable{
-					Child: boxes.Text{Msg: "Hmm..."},
+					Child: boxes.Container{
+						Child: boxes.Text{Msg: "I'm a button"},
+					},
 					OnClick: func() {
 						panic("yay")
 					},
 				},
-				boxes.Text{Msg: "Goodbye, world!"},
+				boxes.Container{
+					Child: boxes.Text{Msg: "Goodbye, world!"},
+				},
 			},
 		},
 	)
