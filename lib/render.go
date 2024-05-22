@@ -23,7 +23,9 @@ type RenderBox struct {
 	Right int
 	Top int
 	Bottom int
+	// Should this take in the click point?
 	OnClick func()
+	Children []RenderBox
 }
 
 type RenderJob struct {
@@ -49,11 +51,16 @@ func (w Clickable) render(ctx Context, cons Constraints) RenderJob {
 		height: childJob.height,
 		exec: func(x, y int) RenderBox {
 			childJob.exec(x, y)
+			// width = 3
+			// 123
+			// ***
+			// * *
+			// ***
 			return RenderBox{
 				Left: x,
 				Top: y,
-				Right: x + childJob.width, // TODO is this right?
-				Bottom: y + childJob.height,
+				Right: x + childJob.width - 1,
+				Bottom: y + childJob.height - 1,
 				OnClick: w.OnClick,
 			}
 		},
@@ -66,6 +73,8 @@ type Text struct {
 }
 
 func (w Text) render(ctx Context, cons Constraints) RenderJob {
+	// TODO
+	const height = 1
 	var width int = 0
 	// TODO layout
 	for _, c := range w.Msg {
@@ -74,11 +83,19 @@ func (w Text) render(ctx Context, cons Constraints) RenderJob {
 
 	return RenderJob{
 		width:  width,
-		height: 1, // TODO
-		exec: func(x, y int) {
+		height: height,
+		exec: func(x, y int) RenderBox {
+			var renderX = x
 			for _, c := range w.Msg {
-				termbox.SetCell(x, y, c, ctx.fg, ctx.bg)
-				x += runewidth.RuneWidth(c)
+				termbox.SetCell(renderX, y, c, ctx.fg, ctx.bg)
+				renderX += runewidth.RuneWidth(c)
+			}
+
+			return RenderBox{
+				Left: x,
+				Right: x + width - 1,
+				Top: y,
+				Bottom: y + height - 1,
 			}
 		},
 	}

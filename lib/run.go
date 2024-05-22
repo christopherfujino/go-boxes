@@ -1,7 +1,6 @@
 package boxes
 
 import (
-	"fmt"
 	termbox "github.com/nsf/termbox-go"
 )
 
@@ -29,7 +28,7 @@ func Run(w Widget) {
 	}
 
 	for {
-		w.render(ctx, cons).exec(0, 0)
+		var renderBox = w.render(ctx, cons).exec(0, 0)
 		termbox.Flush()
 
 		var event = termbox.PollEvent()
@@ -37,7 +36,16 @@ func Run(w Widget) {
 		case termbox.EventKey:
 			break
 		case termbox.EventMouse:
-			panic(fmt.Sprintf("(%d, %d)", event.MouseX, event.MouseY))
+			var maybe = findBox(renderBox, event.MouseY, event.MouseY)
+			if maybe != nil && maybe.OnClick != nil {
+				maybe.OnClick()
+			} else {
+				if maybe == nil {
+					DebugPrint("Got a nil back from findBox()")
+				} else {
+					DebugPrint("Got a RenderBox, but it's OnClick was nil")
+				}
+			}
 		default:
 			panic(event.Type)
 		}

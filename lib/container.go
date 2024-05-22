@@ -41,7 +41,7 @@ func (w Container) render(ctx Context, cons Constraints) RenderJob {
 	return RenderJob{
 		width:  boxWidth,
 		height: boxHeight,
-		exec: func(x, y int) {
+		exec: func(x, y int) RenderBox {
 			childJob.exec(
 				x+borderThickness+paddingX,
 				y+borderThickness+paddingY,
@@ -65,6 +65,13 @@ func (w Container) render(ctx Context, cons Constraints) RenderJob {
 				termbox.SetCell(x, yIter, verticalBar, ctx.fg, ctx.bg)
 				// Right border (sans top & bottom border)
 				termbox.SetCell(x+boxWidth-borderThickness, yIter, verticalBar, ctx.fg, ctx.bg)
+			}
+
+			return RenderBox{
+				Left: x,
+				Right: x + boxWidth - 1,
+				Top: y,
+				Bottom: y + boxHeight - 1,
 			}
 		},
 	}
