@@ -1,6 +1,10 @@
 package boxes
 
 import (
+	"fmt"
+	"io"
+	//"strings"
+
 	runewidth "github.com/mattn/go-runewidth"
 	termbox "github.com/nsf/termbox-go"
 )
@@ -10,45 +14,11 @@ func Map[I any, O any](elements []I, f func(I) O) []O {
 	var mappedElements = make([]O, len(elements))
 
 	for i, element := range elements {
+		DebugLog(fmt.Sprintf("in Map, %d - %v", i, element))
 		mappedElements[i] = f(element)
 	}
 
 	return mappedElements
-}
-
-func findBox(box RenderBox, x, y int) *RenderBox {
-	if x < box.Left || x > box.Right || y > box.Bottom || y < box.Top {
-		//panic(fmt.Sprintf(
-		//	"[L: %d, R: %d, T: %d, B: %d] (%d, %d)",
-		//	box.Left,
-		//	box.Right,
-		//	box.Top,
-		//	box.Bottom,
-		//	x,
-		//	y,
-		//))
-		return nil
-	}
-
-	var children = box.Children
-	if children == nil {
-		if box.OnClick == nil {
-			return nil
-		}
-		return &box
-	}
-
-	for _, child := range children {
-		var maybe = findBox(child, x, y)
-		if maybe != nil && maybe.OnClick != nil {
-			// TODO could multiple children contain the same point?
-			return maybe
-		}
-	}
-	if box.OnClick == nil {
-		return nil
-	}
-	return &box
 }
 
 func DebugPrint(msg string) {
@@ -58,5 +28,23 @@ func DebugPrint(msg string) {
 	for _, c := range msg {
 		termbox.SetCell(x, height-2, c, termbox.ColorBlue, termbox.ColorLightRed)
 		x += runewidth.RuneWidth(c)
+	}
+}
+
+//var debugger io.Writer = &strings.Builder{}
+var debugger io.Writer = nil
+
+func DebugLog(msg string) {
+	if debugger == nil {
+		return
+	}
+
+	_, err := debugger.Write([]byte(msg))
+	if err != nil {
+		panic(err)
+	}
+	_, err = debugger.Write([]byte{10})
+	if err != nil {
+		panic(err)
 	}
 }

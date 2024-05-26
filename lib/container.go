@@ -16,13 +16,14 @@ const bottomRightCorner = '\u2518'
 const horizontalBar = '\u2500'
 const verticalBar = '\u2502'
 
-func (w Container) render(ctx Context, cons Constraints) RenderJob {
+func (w Container) Render(ctx Context, cons Constraints) RenderJob {
+	DebugLog("Laying out a container...")
 	const paddingX = 1
 	const paddingY = 1
 	// TODO some code refactoring before non-1 renders correctly
 	const borderThickness = 1
 
-	var childJob = w.Child.render(
+	var childJob = w.Child.Render(
 		ctx,
 		Constraints{
 			// Should these mins be less padding and border?
@@ -35,14 +36,15 @@ func (w Container) render(ctx Context, cons Constraints) RenderJob {
 	)
 
 	// TODO check for overflow
-	var boxWidth = childJob.width + (borderThickness+paddingX)*2
-	var boxHeight = childJob.height + (borderThickness+paddingY)*2
+	var boxWidth = childJob.Width + (borderThickness+paddingX)*2
+	var boxHeight = childJob.Height + (borderThickness+paddingY)*2
 
 	return RenderJob{
-		width:  boxWidth,
-		height: boxHeight,
-		exec: func(x, y int) RenderBox {
-			childJob.exec(
+		Width:  boxWidth,
+		Height: boxHeight,
+		Exec: func(x, y int) RenderBox {
+			DebugLog("Rendering a container...")
+			var childBox = childJob.Exec(
 				x+borderThickness+paddingX,
 				y+borderThickness+paddingY,
 			)
@@ -72,6 +74,7 @@ func (w Container) render(ctx Context, cons Constraints) RenderJob {
 				Right: x + boxWidth - 1,
 				Top: y,
 				Bottom: y + boxHeight - 1,
+				Children: []RenderBox{childBox},
 			}
 		},
 	}

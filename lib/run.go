@@ -1,8 +1,13 @@
 package boxes
 
 import (
+	"fmt"
+	"strings"
+
 	termbox "github.com/nsf/termbox-go"
 )
+
+const debug = true
 
 func Run(w Widget) {
 	err := termbox.Init()
@@ -10,16 +15,28 @@ func Run(w Widget) {
 	if err != nil {
 		panic(err)
 	}
+
+	var ctx = Context{
+		fg: termbox.ColorBlue,
+		bg: termbox.ColorDefault,
+	}
+
+	defer (func() {
+		if debugger == nil {
+			return
+		}
+
+		debugger := debugger.(*strings.Builder)
+		fmt.Println(debugger.String())
+	})()
+
 	defer termbox.Close()
 
 	// Enable mouse input
 	termbox.SetInputMode(termbox.InputEsc | termbox.InputMouse)
 
 	var windowWidth, windowHeight = termbox.Size()
-	var ctx = Context{
-		fg: termbox.ColorBlue,
-		bg: termbox.ColorDefault,
-	}
+
 	var cons = Constraints{
 		minWidth:  0,
 		maxWidth:  windowWidth,
@@ -28,7 +45,7 @@ func Run(w Widget) {
 	}
 
 	for {
-		var renderBox = w.render(ctx, cons).exec(0, 0)
+		var renderBox = w.Render(ctx, cons).Exec(0, 0)
 		termbox.Flush()
 
 		var event = termbox.PollEvent()
@@ -37,10 +54,12 @@ func Run(w Widget) {
 			DebugPrint("Got Key")
 			break
 		case termbox.EventMouse:
-			var maybe = findBox(renderBox, event.MouseY, event.MouseY)
+			var maybe = renderBox.findHitBox(event.MouseX, event.MouseY)
 			if maybe != nil && maybe.OnClick != nil {
 				maybe.OnClick()
+				DebugPrint("Clicking!")
 			} else {
+				//panic(fmt.Sprintf("Click at (%d, %d) missed hitbox in\n%v"))
 				if maybe == nil {
 					DebugPrint("Got a nil back from findBox()")
 				} else {

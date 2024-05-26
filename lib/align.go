@@ -5,20 +5,21 @@ type Center struct {
 	Child Widget
 }
 
-func (w Center) render(ctx Context, cons Constraints) RenderJob {
+func (w Center) Render(ctx Context, cons Constraints) RenderJob {
 	var width = cons.maxWidth
-	var childJob = w.Child.render(ctx, cons)
-	var leftPad = (width - childJob.width) / 2
+	var childJob = w.Child.Render(ctx, cons)
+	var leftPad = (width - childJob.Width) / 2
 	return RenderJob{
-		width:  width,
-		height: childJob.height,
-		exec: func(x, y int) RenderBox {
-			childJob.exec(x+leftPad, y)
+		Width:  width,
+		Height: childJob.Height,
+		Exec: func(x, y int) RenderBox {
+			var childBox = childJob.Exec(x+leftPad, y)
 			return RenderBox{
 				Left:   x,
-				Right:  x + childJob.width - 1,
+				Right:  x + childJob.Width - 1,
 				Top:    y,
-				Bottom: y + childJob.height - 1,
+				Bottom: y + childJob.Height - 1,
+				Children: []RenderBox{childBox},
 			}
 		},
 	}
@@ -29,22 +30,23 @@ type Row struct {
 	Children []Widget
 }
 
-func (w Row) render(ctx Context, cons Constraints) RenderJob {
+func (w Row) Render(ctx Context, cons Constraints) RenderJob {
+	DebugLog("Laying out a row")
 	var cumulativeWidth = 0
 	var maxHeight = 0
 
 	var jobs = Map(
 		w.Children,
 		func(child Widget) RenderJob {
-			var job = child.render(
+			var job = child.Render(
 				ctx,
 				Constraints{
 					maxWidth: cons.maxWidth - cumulativeWidth,
 				},
 			)
-			cumulativeWidth += job.width
-			if job.height > maxHeight {
-				maxHeight = job.height
+			cumulativeWidth += job.Width
+			if job.Height > maxHeight {
+				maxHeight = job.Height
 			}
 			return job
 		},
@@ -59,20 +61,23 @@ func (w Row) render(ctx Context, cons Constraints) RenderJob {
 	}
 
 	return RenderJob{
-		width:  cumulativeWidth,
-		height: maxHeight,
-		exec: func(x, y int) RenderBox {
+		Width:  cumulativeWidth,
+		Height: maxHeight,
+		Exec: func(x, y int) RenderBox {
+			DebugLog("Rendering a row")
 			var left = x
-			for _, job := range jobs {
-				job.exec(left, y)
-				left += job.width
-			}
+			var childBoxes = Map(jobs, func (job RenderJob) RenderBox {
+				var box = job.Exec(left, y)
+				left += job.Width
+				return box
+			})
 
 			return RenderBox{
 				Left:   x,
 				Right:  x + cumulativeWidth - 1,
 				Top:    y,
 				Bottom: y + maxHeight - 1,
+				Children: childBoxes,
 			}
 		},
 	}
