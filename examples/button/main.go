@@ -11,9 +11,12 @@ func main() {
 				boxes.Container{
 					Child: boxes.Text{Msg: "Hello, world!"},
 				},
-				&ui{
-					child: boxes.Container{
+				boxes.Clickable{
+					Child: boxes.Container{
 						Child: boxes.Text{Msg: "I'm a button"},
+					},
+					OnClick: func() {
+						panic("Clicked!")
 					},
 				},
 				boxes.Container{
@@ -22,30 +25,4 @@ func main() {
 			},
 		},
 	)
-}
-
-type ui struct {
-	state int
-	child boxes.Widget
-}
-
-func (w *ui) Render(ctx boxes.Context, cons boxes.Constraints) boxes.RenderJob {
-	var childJob = w.child.Render(ctx, cons)
-
-	return boxes.RenderJob{
-		Width:  childJob.Width,
-		Height: childJob.Height,
-		Exec: func(x, y int) boxes.RenderBox {
-			return boxes.RenderBox{
-				Left:   x,
-				Top:    y,
-				Right:  x + childJob.Width - 1,
-				Bottom: y + childJob.Height - 1,
-				OnClick: func() {
-					w.state += 1
-				},
-				Children: []boxes.RenderBox{childJob.Exec(x, y)},
-			}
-		},
-	}
 }
